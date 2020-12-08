@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 23 11:51:59 2020
+Created on Sat Oct 24 21:49:37 2020
 
 @author: marla
 """
@@ -11,9 +11,9 @@ import tensorflow as tf
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
-from tensorflow.keras import activations
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, Reshape, Conv2DTranspose, BatchNormalization, LeakyReLU, Dropout, ReLU
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, Reshape, Conv2DTranspose, BatchNormalization, LeakyReLU, Dropout
+from tensorflow.keras.datasets import mnist
 import matplotlib.pyplot as plt
 import random
 from tensorflow.keras.initializers import RandomNormal
@@ -21,62 +21,100 @@ from tensorflow.keras.initializers import RandomNormal
 from ImageReader import ImageReader
 import pickle
 
-import os
 
 
+
+def displayImages(images, imgTitle):
+    # scale from [-1,1] to [0,1]
+	images = (images + 1) / 2.0
+	# plot images
+	for i in range(49):
+		# define subplot
+		plt.subplot(7,7, 1 + i)
+		# turn off axis
+		plt.axis('off')
+		# plot raw pixel data
+		plt.imshow(np.around(images[i],2))
+	# save plot to file
+	#filename = 'generated_plot_e%03d.png' % (epoch+1)
+    # save plot to file
+	plt.suptitle(imgTitle)
+    #show
+	plt.show()
+	#pyplot.savefig(filename)
+	plt.close()
     
-def define_generator(latent_dim):
-    model=Sequential()
-    model.add(Dense(512*4*4, input_dim=latent_dim))
-    model.add(Reshape((4,4,512)))
     
     
-    model.add(Conv2DTranspose(256, kernel_size = 3, strides=(2,2), padding='same'))
-    model.add(BatchNormalization())
+   
+    
+   
+
+def generator(latent_dim):
+    model = Sequential()
+   # init = RandomNormal(mean=0.0, stddev=0.02)
+    nodes = 256*4*4 #6272
+    model.add(Dense(nodes, input_dim = latent_dim))
+   # model.add(BatchNormalization(momentum=0.8))
     model.add(LeakyReLU(0.2))
-
     
-    model.add(Conv2DTranspose(128, kernel_size = 3, strides=(2,2), padding='same'))
-    model.add(BatchNormalization())
+    model.add(Reshape((4,4,256)))
+    #upsample to 14*14
+    model.add(Conv2DTranspose(128, (4,4), strides=(2,2), padding='same'))
+   # model.add(BatchNormalization(momentum=0.8))
     model.add(LeakyReLU(0.2))
     
-    model.add(Conv2DTranspose(64, kernel_size = 3, strides=(2,2), padding='same'))
-    model.add(BatchNormalization())
+    #upsample to 28*28
+    model.add(Conv2DTranspose(128, (4,4), strides=(2,2), padding='same'))
+ #   model.add(BatchNormalization(momentum=0.8))
     model.add(LeakyReLU(0.2))
     
-    #need to output a 64x64x3 image
-    model.add(Conv2DTranspose(3, kernel_size = 3, strides=(2,2), padding='same', activation='tanh'))
-
-
-    print("Generator ")
+    #upsample to 28*28
+    model.add(Conv2DTranspose(128, (4,4), strides=(2,2), padding='same'))
+   # model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(0.2))
+    
+    #conv layer
+    model.add(Conv2D(3, kernel_size=3, activation='tanh', padding='same'))
+    
+    print("generator")
     model.summary()
     return model
-
-
     
-def define_discriminator(imgHeight, imgWidth):
+    
+def discriminator():
     model = Sequential()
-    model.add(Conv2D(64, kernel_size=3, padding='same', input_shape=(imgHeight, imgWidth, 3)))
+   # init = RandomNormal(mean=0.0, stddev=0.02)
+    model.add(Conv2D(64, kernel_size=3, padding='same', input_shape=(32, 32, 3)))
+    #model.add(BatchNormalization())
     model.add(LeakyReLU(alpha=0.2))
     
-    model.add(Conv2D(128, kernel_size=3, padding='same'))
-    model.add(BatchNormalization())
+    
+    model.add(Conv2D(128, kernel_size=3, strides=(2,2), padding='same'))
+   # model.add(BatchNormalization())
     model.add(LeakyReLU(alpha=0.2))
     
-    model.add(Conv2D(128, kernel_size=3, padding='same'))
-    model.add(BatchNormalization())
+    model.add(Conv2D(128, kernel_size=3, strides=(2,2), padding='same'))
+    #model.add(BatchNormalization())
+    model.add(LeakyReLU(alpha=0.2))
+  
+    model.add(Conv2D(256, kernel_size=3, strides=(2,2), padding='same'))
+    #model.add(BatchNormalization())
     model.add(LeakyReLU(alpha=0.2))
     
     model.add(Flatten())
+    model.add(Dropout(0.4))
     model.add(Dense(1, activation='sigmoid'))
     opt=tf.keras.optimizers.Adam(learning_rate=0.0002, beta_1=0.5)
+    #lossFcn = tf.keras.losses.BinaryCrossentropy(label_smoothing=0.4) 
     model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
- #  model.summary()
+    print("discriminator model")
+    model.summary()
     return model
+   
 
-
-def defineGAN(discriminator, generator):
+def gan(generator, discriminator):
     discriminator.trainable = False
     model = Sequential()
     model.add(generator)
@@ -128,9 +166,25 @@ def eval_performance(epoch, discriminator, generator, latent_dim, num_samples, t
     print("Accuracy real: ", real_acc * 100)
     print("Accuracy fake: ", fake_acc * 100)
     #save the model
-    model_filename = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/largeCollie/Models/generator' + str(epoch)
+    model_filename = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/ModelsStanford/generator' + str(epoch)
     generator.save(model_filename)
+
+
+def cifar10Data():
+    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+    x_train = x_train.reshape(x_train.shape[0], 32, 32, 3).astype('float32')
     
+    #get just one class 5=dog
+    y_sub = np.where(y_train==5)[0]
+    x_train = x_train[y_sub]
+   
+    
+    x_train = (x_train-127.5)/127.5
+    
+    displayImages(x_train, 'Initial')
+    
+    return x_train
+
 def addNoise(y_values, value_type):
     n=round(y_values.shape[0]*0.05)
 
@@ -145,37 +199,16 @@ def addNoise(y_values, value_type):
             
     return y_values
 
-def xrealcopy(num_images, imgs, img_dim):
+def xrealcopy(num_images, imgs):
     #randomly sample
     n = [random.randint(0,len(imgs)-1) for i in range(num_images)]
     real_images = [imgs[i] for i in n]
     real_images = np.array(real_images)
-    real_images.reshape(num_images, img_dim, img_dim, 3)
+    real_images.reshape(num_images, 32, 32, 3)
     return real_images, n
 
-def displayImages(images, imgTitle):
-    # scale from [-1,1] to [0,1]
-	images = (images + 1) / 2.0
-	# plot images
-	for i in range(25):
-		# define subplot
-		plt.subplot(5,5, 1 + i)
-		# turn off axis
-		plt.axis('off')
-		# plot raw pixel data
-		plt.imshow(np.around(images[i],2))
-	# save plot to file
-	#filename = 'generated_plot_e%03d.png' % (epoch+1)
-    # save plot to file
-	plt.suptitle(imgTitle)
-    #show
-	plt.show()
-	#pyplot.savefig(filename)
-	plt.close()
-    
 
-  
-def train_gan(gan, discriminator, generator, latent_dim, train_images, img_dim):
+def train(gan, discriminator, generator, latent_dim, train_images):
     num_epochs = 201
     batch_size=128
     half_batch = batch_size//2
@@ -184,8 +217,8 @@ def train_gan(gan, discriminator, generator, latent_dim, train_images, img_dim):
     
     for i in range(num_epochs):
         for j in range(num_batches):
-            #x_temp = train_images.copy()
-            #x_temp = x_temp.reshape(train_images.shape[0], img_dim,img_dim, 3)
+            x_temp = train_images.copy()
+            x_temp = x_temp.reshape(train_images.shape[0], 32, 32, 3)
             #print('thre ', x_temp.shape)
             #displayImages(x_temp, 'test2')
             
@@ -199,12 +232,12 @@ def train_gan(gan, discriminator, generator, latent_dim, train_images, img_dim):
             fake_loss = discriminator.train_on_batch(xFake,yFake)
                      
             #create real images
-            xReal = getRealImages(half_batch, train_images)
-            #xReal, n = xrealcopy(half_batch, x_temp, img_dim)
-            #x_temp = np.delete(x_temp, n,0)
+            #xReal = getRealImages(half_batch, train_images)
+            xReal, n = xrealcopy(half_batch, x_temp)
+            x_temp = np.delete(x_temp, n,0)
             #x_temp = x_temp.reshape(train_images.shape[0] - (j+1)*batch_size, 32, 32, 3)
             yOnes = np.ones((half_batch, 1))
-            yReal = generate_positive_labels(yOnes, 0.8, 1.0)
+            yReal = generate_positive_labels(yOnes, 0.7, 1.0)
             yReal = addNoise(yReal, "Fake")
              
             real_loss = discriminator.train_on_batch(xReal,yReal)
@@ -217,18 +250,16 @@ def train_gan(gan, discriminator, generator, latent_dim, train_images, img_dim):
             #create points for gan
              
             #y_gan=np.ones((batch_size,1))
-            y_gan = generate_positive_labels(np.ones((batch_size,1)), 0.8, 1.0)
+            y_gan = generate_positive_labels(np.ones((batch_size,1)), 0.7, 1.0)
             x_gan = createNoiseVector(latent_dim, batch_size)
             gan_loss = gan.train_on_batch(x_gan,y_gan)
             
-            
+            displayImages(xFake, 'Epoch: '+ str(i) + ' Fake Batch: ' + str(j))
             
             print("->", str(i), ", ", str(j), "/", str(num_batches), ', f_loss: ', fake_loss[0], ', r_loss: ', real_loss[0], 'g_loss, ', gan_loss[0])
             
-            if j==0:
-                displayImages(xFake, 'Epoch: '+ str(i) + ' Fake Batch: ' + str(j) )
-                displayImages(xReal, 'Epoch: '+ str(i) + ' Real Batch: ' + str(j) )
-            
+        
+        
         print("generating ", i)
         generated_images = createFakeImages(100, 50, generator)
         displayImages(generated_images, 'Iteration: '+str(i))
@@ -239,25 +270,46 @@ def train_gan(gan, discriminator, generator, latent_dim, train_images, img_dim):
             
             
     return generator
+            
 
+def main():
+    latent_dim = 100
+   
+    '''
+    filePath = '/home/marla/Documents/ganData/collie'
+    ir = ImageReader(filePath, 64, 64, 3)
+    ir.get_image_list()
+    ir.printSample()
+    train_images = ir.getImages()
+    '''
+    ''' 
+    train_images = cifar10Data()
+    print("TRAIN IMAGES SHAPE ", train_images.shape)
+    print("TYPE ", type(train_images))
+    '''
     
+    img_path = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/stanfordDogsResize32.sav'
+    train_images = pickle.load(open(img_path, 'rb'))
+    train_images = train_images[:10000,:,:,:]
+    print("NUMBER OF TRAINING IMAGES SHAPE ", train_images.shape) 
+    #test out creating the generator and fake_images; show the images created
+    gen = generator(latent_dim)
+   # fake_images=createFakeImages(100, 100, gen)
+   # displayImages(fake_images, 'Gen Test')
     
-
-#define constants
-imageHeight = 64
-imageWidth = 64
-latent_dim = 100
-
-img_path = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/stanfordDogsResizeSmall.sav'
-train_images = pickle.load(open(img_path, 'rb'))
-train_images = train_images[:10000,:,:,:]
-print("NUMBER OF TRAINING IMAGES SHAPE ", train_images.shape)    
-
-#define gan architecture
-generator = define_generator(100)
-discriminator = define_discriminator(imageHeight, imageWidth)
-gan = defineGAN(discriminator, generator)
-
-
-trained_gen = train_gan(gan, discriminator, generator, latent_dim, train_images, imageHeight)
-
+    #printing 25 images at a time; no error handling for fewer than 25
+    #show the real images to test
+    #real_images = getRealImages(26, train_images)
+    #displayImages(real_images)
+    
+    #test out discriminator
+    disc=discriminator()
+    #predictions = disc.predict(real_images)
+    #print("Predictions ", predictions)
+    
+    ganMdl = gan(gen, disc)
+    trained_gen = train(ganMdl, disc, gen, latent_dim, train_images)
+   
+    #ml = tf.keras.models.load_model(model_filename2
+   # ml.predict(noise)
+main()
