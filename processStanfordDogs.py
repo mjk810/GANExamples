@@ -15,8 +15,8 @@ from ImageReader import ImageReader
 
 
 
-def processStanfordDog():
-    filePath = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/stanfordDogs/'
+def processStanfordDog(filePath, outfile):
+    
     dir_list = os.listdir(filePath)
     all_images = np.empty((0, imageHeight, imageWidth, 3), dtype="float32")
     for d in dir_list:
@@ -29,7 +29,7 @@ def processStanfordDog():
         train_images = ir.getImages()
         
         all_images = np.append(all_images, train_images, axis = 0)
-    outfile = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/stanfordDogsResize32.sav'
+   
     print("Saved!")
     pickle.dump(all_images,open(outfile, "wb"))
  

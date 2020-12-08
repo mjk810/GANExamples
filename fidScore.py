@@ -74,7 +74,7 @@ class FID(object):
         return d2
     
     def testShape(self):
-        im = Image.open("/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/collie/n02106030_356.jpg")
+        im = Image.open("")
         resizedImg = self.resizeImages(np.expand_dims(np.asarray(im), axis=0))
         assert resizedImg.shape == (1, self.imageHeight, self.imageWidth, 3)
         print("Passed")
@@ -86,8 +86,8 @@ class FID(object):
             print("Test Passed!")
             
     def runTests(self, images):
-        print("Testing the image resize function...")
-        self.testShape()
+        #print("Testing the image resize function...")
+        #self.testShape()
         print("Testing score for the same images; score should be 0...")
         self.testSameImageScore(images)
 
@@ -97,16 +97,17 @@ num_samples = 100
 score = FID()
 
 #get the images used for training
-#img_path is the path to real images
-img_path = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/stanfordDogsResize32.sav'
+#img_path is the path to real images; add the filepath on the line below
+img_path = ''
 train_images = pickle.load(open(img_path, 'rb'))
 train_images = train_images[:num_samples,:,:,:]
 print("NUMBER OF TRAINING IMAGES SHAPE ", train_images.shape)
 scaled_reals = score.resizeImages(train_images)
 print("SCALED Image shape: ", scaled_reals.shape)
 
-#use the trained gan to generate fake images and scale them for the inception model
-model_filename = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/ModelsStanford/generator180'
+#use the trained gan to generate fake images and scale them for the inception model; specify filename
+#on line below
+model_filename = ''
 ml = tf.keras.models.load_model(model_filename)
 noise = np.array([np.random.normal(0,1,100) for x in range(num_samples)])
 gen_ims = ml.predict(noise)

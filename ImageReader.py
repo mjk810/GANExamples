@@ -105,7 +105,7 @@ class ImageReader:
         return np.array(self.image_list)
  
 '''
-filePath = '/home/marla/Documents/ganData/collie'
+filePath = ''
 ir = ImageReader(filePath, 64, 64, 3)
 ir.get_image_list()
 ir.printSample()

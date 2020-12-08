@@ -168,7 +168,7 @@ def eval_performance(epoch, discriminator, generator, latent_dim, num_samples, t
     print("Accuracy real: ", real_acc * 100)
     print("Accuracy fake: ", fake_acc * 100)
     #save the model
-    model_filename = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/ModelsStanford/generator' + str(epoch)
+    model_filename = '' 
     generator.save(model_filename)
 
 
@@ -278,7 +278,7 @@ def main():
     latent_dim = 100
    
     '''
-    filePath = '/home/marla/Documents/ganData/collie'
+    filePath = ''
     ir = ImageReader(filePath, 64, 64, 3)
     ir.get_image_list()
     ir.printSample()
@@ -290,7 +290,7 @@ def main():
     print("TYPE ", type(train_images))
     '''
     
-    img_path = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/stanfordDogsResize32.sav'
+    img_path = ''
     train_images = pickle.load(open(img_path, 'rb'))
     train_images = train_images[:10000,:,:,:]
     print("NUMBER OF TRAINING IMAGES SHAPE ", train_images.shape) 

@@ -196,7 +196,10 @@ def get_model_prediction(model, myImage):
 #code to run example
 model = load_pretrained_model()
 #printLayerDetails(model)
-myImage = read_image("/home/marla/Documents/Pictures/IMG_1662.jpg")
+
+#add the filepath to the image on the line below
+path_to_image = ""
+myImage = read_image(path_to_image)
 numImages = 16
 visualize_feature_maps(model, myImage, numImages)
 label=get_model_prediction(model, myImage)
