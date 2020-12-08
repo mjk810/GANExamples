@@ -4,6 +4,9 @@
 Created on Sat Nov 28 20:54:01 2020
 
 @author: marla
+
+This script calculates the FID score to assess the quality of the GAN model. 
+The calculation compares the quality of the generated images with actual images.
 """
 
 import tensorflow as tf
@@ -28,7 +31,7 @@ class FID(object):
         self.imageHeight = imageHeight
         self.imageWidth = imageWidth
     
-    #print layer names
+    #utility function to print model layer names
     def printModel(self):
         for layer in self.model.layers:
             print(layer.name)
@@ -89,10 +92,12 @@ class FID(object):
         self.testSameImageScore(images)
 
 #example code
+#the number of samples to use in the comparison; should be higher, but compute power is limited
 num_samples = 100
 score = FID()
 
 #get the images used for training
+#img_path is the path to real images
 img_path = '/home/marla/Documents/gitHub/ComputerVisionProjects/ganData/stanfordDogsResize32.sav'
 train_images = pickle.load(open(img_path, 'rb'))
 train_images = train_images[:num_samples,:,:,:]
