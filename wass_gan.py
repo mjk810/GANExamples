@@ -4,6 +4,9 @@
 Created on Sun Oct 18 15:29:12 2020
 
 @author: marla
+
+Wasserstein GAN
+Wasserstein GAN uses an alternative loss function based on earth movers distance; can be used to avoid mode collapse
 """
 
 

@@ -4,6 +4,8 @@
 Created on Sun Nov  1 20:47:49 2020
 
 @author: marla
+
+Use to visualize the intermediate layers of vgg16 model
 """
 
 
@@ -38,7 +40,8 @@ def setVisLayers():
     plot_layers=['block1_conv1',
                  'block1_conv2',
                  'block1_pool', 
-                 'block2_conv1']
+                 'block2_conv1',
+                 'block3_conv2']
     
     return plot_layers
         
@@ -161,7 +164,7 @@ def visualize_feature_maps(model, myImage, numImages):
     
     for mp in f_maps:
         print("MAP shape ", mp.shape)
-        displayImages(mp, plot_layers[layer_count], numImages)h
+        displayImages(mp, plot_layers[layer_count], numImages)
         layer_count+=1
     
             
@@ -194,7 +197,7 @@ def get_model_prediction(model, myImage):
 model = load_pretrained_model()
 #printLayerDetails(model)
 myImage = read_image("/home/marla/Documents/Pictures/IMG_1662.jpg")
-numImages = 1
+numImages = 16
 visualize_feature_maps(model, myImage, numImages)
 label=get_model_prediction(model, myImage)
 

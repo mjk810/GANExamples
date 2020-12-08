@@ -4,6 +4,9 @@
 Created on Sat Oct 24 19:17:57 2020
 
 @author: marla
+
+ImageReader class is used to read and format images from file location for use in CNN
+
 """
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -68,6 +71,7 @@ class ImageReader:
         
     
     def scaleImage(self, img):
+	#scale images to range -1 to 1
         img = ((img-127.5)/127.5).astype('float32')
         return img
 

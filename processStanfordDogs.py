@@ -4,6 +4,9 @@
 Created on Tue Nov 24 14:24:50 2020
 
 @author: marla
+
+Use to process Stanford Dogs dataset from file; 
+Reads the images using ImageReader, resizes them, and pickles them
 """
 import os
 import pickle

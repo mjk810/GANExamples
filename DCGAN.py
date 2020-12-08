@@ -4,6 +4,8 @@
 Created on Sat Oct 24 21:49:37 2020
 
 @author: marla
+
+DCGAN
 """
 
 
